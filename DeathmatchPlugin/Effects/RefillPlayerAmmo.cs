@@ -5,12 +5,12 @@ namespace DeathmatchPlugin.Effects;
 
 public static class RefillPlayerAmmo
 {
-    private static HashSet<string> RefillDenyList = new()
+    private static readonly HashSet<string> RefillDenyList = new()
     {
         "weapon_negev",
     };
 
-    public static bool ShouldRefillPlayerAmmo(CBasePlayerWeapon weapon)
+    private static bool ShouldRefillPlayerAmmo(CEntityInstance weapon)
     {
         return !RefillDenyList.Contains(weapon.DesignerName);
     }
@@ -21,5 +21,6 @@ public static class RefillPlayerAmmo
         if (activeWeapon == null) return;
         if (!ShouldRefillPlayerAmmo(activeWeapon)) return;
         activeWeapon.Clip1 = 250;
+        activeWeapon.ReserveAmmo[0] = 250;
     }
 }

@@ -35,4 +35,15 @@ public static class PlayerUtilities
                 return true;
         }
     }
+
+    public static bool TryFindPlayerBySteamId(ulong steamId, out CCSPlayerController player)
+    {
+        player = null!;
+        var foundPlayer = GetAllPlayers().FirstOrDefault(player => player.SteamID == steamId);
+
+        if (foundPlayer == null) return false;
+
+        player = foundPlayer;
+        return true;
+    }
 }

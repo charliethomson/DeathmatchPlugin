@@ -61,6 +61,9 @@ public class WeaponRelations
 
     public static string? ResolveWeaponName(string weaponName)
     {
+        weaponName = weaponName.ToLower();
+
+        if (weaponName.StartsWith("weapon_")) weaponName = weaponName.Split("weapon_")[1];
         if (WeaponList.IsValidWeapon(weaponName)) return weaponName;
 
         var mappedWeaponName = TryGetMappedWeaponName(weaponName);

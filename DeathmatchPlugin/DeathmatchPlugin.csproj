@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
         <TargetFramework>net7.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
@@ -8,7 +7,7 @@
 
     <ItemGroup>
         <Reference Include="CounterStrikeSharp.API">
-            <HintPath>C:\Users\c\Downloads\counterstrikesharp-with-runtime-6798244\addons\counterstrikesharp\api\CounterStrikeSharp.API.dll</HintPath>
+            <HintPath>C:\Users\c\Downloads\counterstrikesharp-with-runtime-c01357e\addons\counterstrikesharp\api\CounterStrikeSharp.API.dll</HintPath>
         </Reference>
     </ItemGroup>
 </Project>

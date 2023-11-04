@@ -1,13 +1,11 @@
-﻿using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
+﻿using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Commands;
-using CounterStrikeSharp.API.Modules.Entities;
-using CounterStrikeSharp.API.Modules.Events;
 using DeathmatchPlugin.Config;
 using DeathmatchPlugin.Effects;
 using DeathmatchPlugin.Extensions;
 using DeathmatchPlugin.Guns;
+using DeathmatchPlugin.Killstreaks;
 using DeathmatchPlugin.Managers;
 using DeathmatchPlugin.Utilities;
 using CSSUtilities = CounterStrikeSharp.API.Utilities;
@@ -19,21 +17,60 @@ namespace DeathmatchPlugin;
 public class DeathmatchPlugin : BasePlugin
 {
     public override string ModuleName => "Deathmatch Plugin";
-    public override string ModuleVersion => "v1.0.0";
+    public override string ModuleVersion => "v1.0.1";
+    public override string ModuleAuthor => "Charlie Thomson <charlie@thmsn.dev>";
+
+    public override string ModuleDescription => "The Mercury Gaming (gg/mercurygaming) Deathmatch plugin";
 
     private LoadoutManager _loadoutManager = new();
+
+    private HealthShotSubscriber _healthShotSubscriber = new();
+    private KillstreakLogger _killstreakLogger = new();
+    private MultiKillSubscriber _multiKillSubscriber = new();
+
+    private KillstreakManager _killstreakManager = new();
+
+    private CSSTimer? _chatSpamTimer;
+    private CSSTimer? _loopbackLoadoutsTimer;
 
 
     public override void Load(bool hotReload)
     {
+        _healthShotSubscriber.Init();
+        _killstreakLogger.Init();
+        _multiKillSubscriber.Init();
+
         _loadoutManager.Init();
+
+        _killstreakManager.Init();
+        _killstreakManager.Subscribe("healthShotSubscriber", _healthShotSubscriber);
+        _killstreakManager.Subscribe("killstreakLogger", _killstreakLogger);
+        _killstreakManager.Subscribe("multiKillSubscriber", _multiKillSubscriber);
+
+        _chatSpamTimer?.Kill();
+        _chatSpamTimer = new CSSTimer(30, ChatSpam.Do, CSSTimerFlags.REPEAT);
+
+        _loopbackLoadoutsTimer?.Kill();
+        _loopbackLoadoutsTimer = new CSSTimer(3, _loadoutManager.FlushOutdatedLoadouts, CSSTimerFlags.REPEAT);
+
+        AddCommandListener("buy", OnPlayerPurchaseWeapon);
+
         RegisterLoadoutChangeCommands();
     }
 
     public override void Unload(bool hotReload)
     {
         UnregisterLoadoutChangeCommands();
+
         _loadoutManager.Cleanup();
+        _killstreakManager.Unsubscribe("healthShotSubscriber");
+        _killstreakManager.Unsubscribe("killstreakLogger");
+        _killstreakManager.Unsubscribe("multiKillSubscriber");
+        _chatSpamTimer?.Kill();
+        _loopbackLoadoutsTimer?.Kill();
+        _multiKillSubscriber.Cleanup();
+        _killstreakLogger.Cleanup();
+        _healthShotSubscriber.Cleanup();
     }
 
     public void CommandChangeLoadout(CCSPlayerController? player, CommandInfo command)
@@ -44,6 +81,7 @@ public class DeathmatchPlugin : BasePlugin
             return;
         }
 
+        
         var alias = command.GetArg(0);
         var weapon = new Weapon(alias);
         _loadoutManager.OnChooseWeapon(player, weapon);
@@ -57,7 +95,7 @@ public class DeathmatchPlugin : BasePlugin
             var aliasSpecificDescription = $"Set your {weapon.Slot} weapon to {weapon.Slug}";
 
             AddCommand(alias, aliasSpecificDescription, CommandChangeLoadout);
-            Logging.Log($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\" => \"{weapon.Slug}\"");
+            Logging.LogTrace($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\" => \"{weapon.Slug}\"");
         }
     }
 
@@ -66,8 +104,17 @@ public class DeathmatchPlugin : BasePlugin
         foreach (var alias in WeaponAliases.AllWeaponAliases)
         {
             RemoveCommand(alias, CommandChangeLoadout);
-            Logging.Log($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\"");
+            Logging.LogTrace($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\"");
         }
+    }
+
+    private HookResult OnPlayerPurchaseWeapon(CCSPlayerController? player, CommandInfo commandinfo)
+    {
+        Console.WriteLine(commandinfo.ArgString);
+        if (player == null) return HookResult.Continue;
+        _loadoutManager.OnPurchaseWeapon(player);
+
+        return HookResult.Continue;
     }
 
     [GameEventHandler]
@@ -76,11 +123,15 @@ public class DeathmatchPlugin : BasePlugin
         var attacker = @event.Attacker;
         var target = @event.Userid;
         if (!(attacker.IsOnATeam() && target.IsOnATeam())) return HookResult.Continue;
+
+        _killstreakManager.OnPlayerDeath(target);
         if (attacker.SteamID == target.SteamID)
         {
-            Logging.Log("Suicide");
+            Logging.LogTrace("Suicide");
             return HookResult.Continue;
         }
+
+        _killstreakManager.OnKill(attacker);
 
         RefillPlayerAmmo.Do(attacker);
 
@@ -94,6 +145,7 @@ public class DeathmatchPlugin : BasePlugin
         if (!player.IsOnATeam()) return HookResult.Continue;
 
         _loadoutManager.OnPlayerSpawn(@event);
+        PrintLoadoutToCenter(@event.Userid);
 
         return HookResult.Continue;
     }
@@ -118,27 +170,47 @@ public class DeathmatchPlugin : BasePlugin
         return HookResult.Continue;
     }
 
+    public HookResult OnItemPickup(EventItemPurchase @event, GameEventInfo info)
+    {
+        Logging.LogWarn($"Item purchased?");
+        // Logging.LogWarn($"{@event.Userid.PlayerName} equipped {@event.Item}");
+        // Server.PrintToChatAll($"{@event.Userid.PlayerName} equipped {@event.Item}");
+        return HookResult.Continue;
+    }
 
-    [ConsoleCommand("loadout", "Show your current loadout")]
+
+    [ConsoleCommand("css_loadout", "Show your current loadout")]
     public void OnLoadout(CCSPlayerController? player, CommandInfo command)
     {
         if (CommandUtilities.ClientCommand(player)) return;
-
-        var loadout = _loadoutManager.GetLoadout(player!);
-        var loadoutDisplay = "";
-
-        loadoutDisplay += $"Primary: {loadout?.PrimaryWeapon?.DisplayName ?? "None"}";
-        loadoutDisplay += $"\nSecondary: {loadout?.SecondaryWeapon?.DisplayName ?? "None"}";
-        if (!string.IsNullOrEmpty(loadout?.SpecialWeapon?.DisplayName))
-            loadoutDisplay += $"\nSpecial: {loadout.SpecialWeapon.DisplayName}";
-
-        player!.PrintToCenter(loadoutDisplay);
+        PrintLoadoutToCenter(player!);
     }
 
-    [ConsoleCommand("guns", "List weapon names and the command to choose them")]
+
+    public void PrintLoadoutToCenter(CCSPlayerController player)
+    {
+        var loadout = _loadoutManager.GetLoadout(player);
+        var loadoutDisplay = "";
+
+        loadoutDisplay += $"Primary: {loadout.PrimaryWeapon?.DisplayName ?? "None"}";
+        loadoutDisplay += $"\nSecondary: {loadout.SecondaryWeapon.DisplayName}";
+        if (!string.IsNullOrEmpty(loadout.SpecialWeapon?.DisplayName))
+            loadoutDisplay += $"\nSpecial: {loadout.SpecialWeapon.DisplayName}";
+
+        player.PrintToCenter(loadoutDisplay);
+    }
+
+    [ConsoleCommand("css_guns", "List weapon names and the command to choose them")]
     public void OnGuns(CCSPlayerController? player, CommandInfo command)
     {
         if (player == null || !player.IsOnATeam()) return;
         WeaponList.DebugWeaponNameConsole(player);
+    }
+
+    [ConsoleCommand("css_dm_version", "Print the version of the DeathmatchPlugin")]
+    public void OnVersion(CCSPlayerController? player, CommandInfo command)
+    {
+        Logging.LogWarn($"{ChatConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
+        player?.PrintToChat($"{ChatConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
     }
 }

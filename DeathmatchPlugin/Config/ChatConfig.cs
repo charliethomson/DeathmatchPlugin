@@ -1,6 +1,8 @@
-﻿namespace DeathmatchPlugin.Config;
+﻿using DeathmatchPlugin.Utilities;
 
-public class ChatConfig
+namespace DeathmatchPlugin.Config;
+
+public static class ChatConfig
 {
-    public const string ChatPrefix = "[DM]";
+    public static readonly string ChatPrefix = $"[{Colored.Red("mG")}|{Colored.Green("DM")}]";
 }

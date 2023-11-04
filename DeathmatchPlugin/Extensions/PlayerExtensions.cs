@@ -16,7 +16,7 @@ namespace DeathmatchPlugin.Extensions
                 return;
             }
 
-            Logging.Log($"SetColor - Setting {player.PlayerName} to {color.ToString()}");
+            Logging.LogTrace($"SetColor - Setting {player.PlayerName} to {color.ToString()}");
             var col = 255;
             col <<= 8;
             col |= color.B;
@@ -37,7 +37,7 @@ namespace DeathmatchPlugin.Extensions
             }
 
             var isAlive = player.PlayerPawn.Value.LifeState == 0;
-            Logging.Log($"IsAlive - {player.PlayerName} isAlive? {isAlive}");
+            Logging.LogTrace($"IsAlive - {player.PlayerName} isAlive? {isAlive}");
             return isAlive;
         }
 
@@ -50,7 +50,7 @@ namespace DeathmatchPlugin.Extensions
             }
 
             var isDying = player.PlayerPawn.Value.LifeState == 1;
-            Logging.Log($"IsDying - {player.PlayerName} isDying? {isDying}");
+            Logging.LogTrace($"IsDying - {player.PlayerName} isDying? {isDying}");
             return isDying;
         }
 
@@ -63,7 +63,7 @@ namespace DeathmatchPlugin.Extensions
             }
 
             var isDead = player.PlayerPawn.Value.LifeState == 2;
-            Logging.Log($"IsDead - {player.PlayerName} isDead? {isDead}");
+            Logging.LogTrace($"IsDead - {player.PlayerName} isDead? {isDead}");
             return isDead;
         }
 
@@ -77,7 +77,7 @@ namespace DeathmatchPlugin.Extensions
             }
 
             var isTerrorist = player.PlayerPawn.Value.TeamNum == 2;
-            Logging.Log($"IsTerrorist - {player.PlayerName} isTerrorist? {isTerrorist}");
+            Logging.LogTrace($"IsTerrorist - {player.PlayerName} isTerrorist? {isTerrorist}");
             return isTerrorist;
         }
 
@@ -90,7 +90,7 @@ namespace DeathmatchPlugin.Extensions
             }
 
             var isCounterTerrorist = player.PlayerPawn.Value.TeamNum == 3;
-            Logging.Log($"IsCounterTerrorist - {player.PlayerName} isCounterTerrorist? {isCounterTerrorist}");
+            Logging.LogTrace($"IsCounterTerrorist - {player.PlayerName} isCounterTerrorist? {isCounterTerrorist}");
             return isCounterTerrorist;
         }
 
@@ -104,6 +104,15 @@ namespace DeathmatchPlugin.Extensions
             if (!player.IsOnATeam()) return null;
             var weaponServices = player.PlayerPawn.Value.WeaponServices;
             return weaponServices?.ActiveWeapon.GetValueOrNull();
+        }
+
+        public static string TeamColoredPlayerName(this CCSPlayerController player)
+        {
+            
+            return player.IsTerrorist()
+                ? Colored.LightOlive(player.PlayerName)
+                : Colored.LightBlue(player.PlayerName);
+
         }
     }
 }
