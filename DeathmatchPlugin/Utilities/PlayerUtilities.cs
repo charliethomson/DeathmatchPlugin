@@ -1,4 +1,5 @@
 ﻿using CounterStrikeSharp.API.Core;
+using DeathmatchPlugin.Config;
 
 namespace DeathmatchPlugin.Utilities;
 
@@ -25,10 +26,10 @@ public static class PlayerUtilities
         switch (matchingPlayers.Count)
         {
             case > 1:
-                feedback($"[MG] Found multiple players matching \"{playerName}\", please try again");
+                feedback($"{ChatConfig.ChatPrefix} Found multiple players matching \"{playerName}\", please try again");
                 return false;
             case 0:
-                feedback($"[MG] No players matching \"{playerName}\" found, please try again");
+                feedback($"{ChatConfig.ChatPrefix} No players matching \"{playerName}\" found, please try again");
                 return false;
             default:
                 player = matchingPlayers[0];

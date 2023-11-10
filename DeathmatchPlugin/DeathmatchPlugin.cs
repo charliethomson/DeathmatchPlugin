@@ -30,6 +30,7 @@ public class DeathmatchPlugin : BasePlugin
 
     private KillstreakManager _killstreakManager = new();
 
+
     private CSSTimer? _chatSpamTimer;
     private CSSTimer? _loopbackLoadoutsTimer;
 
@@ -81,7 +82,6 @@ public class DeathmatchPlugin : BasePlugin
             return;
         }
 
-        
         var alias = command.GetArg(0);
         var weapon = new Weapon(alias);
         _loadoutManager.OnChooseWeapon(player, weapon);
@@ -110,7 +110,6 @@ public class DeathmatchPlugin : BasePlugin
 
     private HookResult OnPlayerPurchaseWeapon(CCSPlayerController? player, CommandInfo commandinfo)
     {
-        Console.WriteLine(commandinfo.ArgString);
         if (player == null) return HookResult.Continue;
         _loadoutManager.OnPurchaseWeapon(player);
 
