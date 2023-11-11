@@ -13,7 +13,17 @@ NOTE: I'd recommend updating `dllinclude\CounterStrikeSharp.dll` to the exact ve
 - profit?
 
 ## Configuration
-Currently there is no configuration, if you'd like to add/update the source code you're welcome to do so. (contributions welcome 😀)
+`plugins/deathmatch.config.json`: (default)
+```json
+{
+  "chatSpamMessages": [
+    "<lime>Type /guns in chat to get a printout (in console) of all weapon commands!</lime>"
+  ],
+  "chatPrefix": "[<green>DM</green>]",
+  "debug": false
+}
+```
+`chatSpamMessages` and `chatPrefix` are configurable with colors as seen above, a full list of tag names is available in [Utilities/Colored.cs](DeathmatchPlugin/Utilities/Colored.cs) 
 
 ## Dependencies
 - CounterStrikeSharp

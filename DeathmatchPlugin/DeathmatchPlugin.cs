@@ -17,7 +17,7 @@ namespace DeathmatchPlugin;
 public class DeathmatchPlugin : BasePlugin
 {
     public override string ModuleName => "Deathmatch Plugin";
-    public override string ModuleVersion => "v1.0.1";
+    public override string ModuleVersion => "v1.0.2";
     public override string ModuleAuthor => "Charlie Thomson <charlie@thmsn.dev>";
 
     public override string ModuleDescription => "The Mercury Gaming (gg/mercurygaming) Deathmatch plugin";
