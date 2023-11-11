@@ -25,7 +25,7 @@ public class LoadoutManager : LifeCycle
 
     public void OnPlayerConnect(EventPlayerConnectFull @event)
     {
-        Loadouts[@event.Userid.SteamID] = new();
+        Loadouts[@event.Userid.SteamID] = WeaponLoadout.Default(@event.Userid);
     }
 
     public void OnPlayerDisconnect(EventPlayerDisconnect @event)

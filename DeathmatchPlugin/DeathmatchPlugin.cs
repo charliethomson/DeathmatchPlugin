@@ -37,6 +37,8 @@ public class DeathmatchPlugin : BasePlugin
 
     public override void Load(bool hotReload)
     {
+        DeathmatchConfig.LoadConfig(ModulePath);
+
         _healthShotSubscriber.Init();
         _killstreakLogger.Init();
         _multiKillSubscriber.Init();
@@ -95,7 +97,7 @@ public class DeathmatchPlugin : BasePlugin
             var aliasSpecificDescription = $"Set your {weapon.Slot} weapon to {weapon.Slug}";
 
             AddCommand(alias, aliasSpecificDescription, CommandChangeLoadout);
-            Logging.LogTrace($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\" => \"{weapon.Slug}\"");
+            Logging.LogTrace($"{DeathmatchConfig.ChatPrefix}: Registered command \"{alias}\" => \"{weapon.Slug}\"");
         }
     }
 
@@ -104,7 +106,7 @@ public class DeathmatchPlugin : BasePlugin
         foreach (var alias in WeaponAliases.AllWeaponAliases)
         {
             RemoveCommand(alias, CommandChangeLoadout);
-            Logging.LogTrace($"{ChatConfig.ChatPrefix}: Registered command \"{alias}\"");
+            Logging.LogTrace($"{DeathmatchConfig.ChatPrefix}: Registered command \"{alias}\"");
         }
     }
 
@@ -209,7 +211,14 @@ public class DeathmatchPlugin : BasePlugin
     [ConsoleCommand("css_dm_version", "Print the version of the DeathmatchPlugin")]
     public void OnVersion(CCSPlayerController? player, CommandInfo command)
     {
-        Logging.LogWarn($"{ChatConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
-        player?.PrintToChat($"{ChatConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
+        Logging.Log($"{DeathmatchConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
+        player?.PrintToChat($"{DeathmatchConfig.ChatPrefix} {ModuleName} - {ModuleVersion}");
+    }
+
+    [ConsoleCommand("css_reload_config")]
+    public void OnReloadConfig(CCSPlayerController? player, CommandInfo info)
+    {
+        if (player != null) return;
+        DeathmatchConfig.LoadConfig(ModulePath);
     }
 }

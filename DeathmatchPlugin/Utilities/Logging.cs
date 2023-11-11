@@ -4,14 +4,20 @@ namespace DeathmatchPlugin.Utilities;
 
 public static class Logging
 {
-    public static bool Debug = false;
+    public static void Log(string message)
+    {
+        Console.BackgroundColor = ConsoleColor.Blue;
+        Console.ForegroundColor = ConsoleColor.White;
+        Console.WriteLine($"{DeathmatchConfig.ChatPrefix}: [INFO]: {message}");
+        Console.ResetColor();
+    }
 
     public static void LogTrace(string message)
     {
-        if (!Debug) return;
+        if (!DeathmatchConfig.Debug) return;
         Console.BackgroundColor = ConsoleColor.DarkGray;
         Console.ForegroundColor = ConsoleColor.DarkMagenta;
-        Console.WriteLine($"{ChatConfig.ChatPrefix}: [TRACE]: {message}");
+        Console.WriteLine($"{DeathmatchConfig.ChatPrefix}: [TRACE]: {message}");
         Console.ResetColor();
     }
 
@@ -19,7 +25,7 @@ public static class Logging
     {
         Console.BackgroundColor = ConsoleColor.Yellow;
         Console.ForegroundColor = ConsoleColor.Black;
-        Console.WriteLine($"{ChatConfig.ChatPrefix}: [WARN]: {message}");
+        Console.WriteLine($"{DeathmatchConfig.ChatPrefix}: [WARN]: {message}");
         Console.ResetColor();
     }
 
@@ -27,7 +33,7 @@ public static class Logging
     {
         Console.BackgroundColor = ConsoleColor.Red;
         Console.ForegroundColor = ConsoleColor.Black;
-        Console.WriteLine($"{ChatConfig.ChatPrefix}: [ERROR]: {message}");
+        Console.WriteLine($"{DeathmatchConfig.ChatPrefix}: [ERROR]: {message}");
         Console.ResetColor();
     }
 }

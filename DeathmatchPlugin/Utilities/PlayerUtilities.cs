@@ -26,10 +26,10 @@ public static class PlayerUtilities
         switch (matchingPlayers.Count)
         {
             case > 1:
-                feedback($"{ChatConfig.ChatPrefix} Found multiple players matching \"{playerName}\", please try again");
+                feedback($"{DeathmatchConfig.ChatPrefix} Found multiple players matching \"{playerName}\", please try again");
                 return false;
             case 0:
-                feedback($"{ChatConfig.ChatPrefix} No players matching \"{playerName}\" found, please try again");
+                feedback($"{DeathmatchConfig.ChatPrefix} No players matching \"{playerName}\" found, please try again");
                 return false;
             default:
                 player = matchingPlayers[0];

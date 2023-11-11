@@ -26,6 +26,6 @@ public class KillstreakLogger : KillstreakSubscriber
 
         if (!KillstreakMessages.TryGetValue(kills, out var message)) return;
 
-        Server.PrintToChatAll($"{ChatConfig.ChatPrefix} {player.TeamColoredPlayerName()} {message}");
+        Server.PrintToChatAll($"{DeathmatchConfig.ChatPrefix} {player.TeamColoredPlayerName()} {message}");
     }
 }

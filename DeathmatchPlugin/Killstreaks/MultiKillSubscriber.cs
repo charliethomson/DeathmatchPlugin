@@ -82,7 +82,7 @@ public class MultiKillSubscriber : KillstreakSubscriber
 
         if (nextChain.Depth > 0)
             Server.PrintToChatAll(
-                $"{ChatConfig.ChatPrefix} {player.TeamColoredPlayerName()} {color}{message} {extraMessage}{TextColor.Reset}");
+                $"{DeathmatchConfig.ChatPrefix} {player.TeamColoredPlayerName()} {color}{message} {extraMessage}{TextColor.Reset}");
     }
 
     public override void Init()
