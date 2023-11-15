@@ -135,6 +135,7 @@ public class DeathmatchPlugin : BasePlugin
         _killstreakManager.OnKill(attacker);
 
         RefillPlayerAmmo.Do(attacker);
+        RefillPlayerHealth.onKill(attacker);
 
         return HookResult.Continue;
     }
